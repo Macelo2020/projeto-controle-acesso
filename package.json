@@ -1,3 +1,21 @@
+<<<<<<< HEAD
+{
+    "name": "projeto-acesso",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.21.2"
+    }
+}
+=======
 {
     "name": "projeto-acesso",
     "version": "1.0.0",
@@ -14,3 +32,4 @@
       "express": "^4.19.2"
     }
   }
+>>>>>>> 49f276a68ea070301ad0aaaaaeb10578c371952c
