@@ -17,7 +17,7 @@ document.getElementById('acessoForm').addEventListener('submit', async function(
     btnVerificar.querySelector('.loading-text').style.display = 'inline';
 
     try {
-        const response = await fetch('/verificar-acesso', {
+        const response = await fetch('/api/verificar-acesso', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
