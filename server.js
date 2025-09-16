@@ -3,7 +3,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
-const cron = require('node-cron'); // Importa a biblioteca
+const cron = require('node-cron');
+const cors = require('cors'); // Importa o cors para permitir requisições de diferentes origens
 require('dotenv').config();
 
 const app = express();
@@ -47,6 +48,7 @@ if (!dbURI) {
     process.exit(1);
 }
 
+// Conectando ao MongoDB Atlas usando a URI do arquivo .env
 mongoose.connect(dbURI)
     .then(() => {
         console.log('Conexão com o MongoDB estabelecida!');
@@ -54,12 +56,7 @@ mongoose.connect(dbURI)
             console.log(`Servidor rodando em http://localhost:${PORT}`);
         });
 
-        // ===========================================
         // Tarefa Agendada: Zerar o Relatório Diário
-        // ===========================================
-        // A tarefa será executada todos os dias à meia-noite.
-        // O formato é: minuto hora dia-do-mes mes dia-da-semana
-        // '0 0 * * *' -> 0 minutos, 0 horas, qualquer dia, qualquer mês, qualquer dia da semana
         cron.schedule('0 0 * * *', async () => {
             try {
                 const resultado = await Acesso.deleteMany({});
@@ -67,6 +64,9 @@ mongoose.connect(dbURI)
             } catch (erro) {
                 console.error('Erro na tarefa agendada ao zerar o relatório:', erro);
             }
+        }, {
+            scheduled: true,
+            timezone: "America/Sao_Paulo"
         });
         console.log('Tarefa de limpeza diária agendada para meia-noite.');
 
@@ -174,8 +174,10 @@ Matrículas Negadas: ${matriculasNegadas.join(', ')}
 // Rotas da API
 // ----------------------------------------------------
 
-// Serve arquivos estáticos da pasta 'public'
+// Middleware
 app.use(express.static('public'));
+app.use(express.json());
+app.use(cors()); // Permite requisições de diferentes origens
 
 // Rota para a página do funcionário (página inicial)
 app.get('/', (req, res) => {
@@ -186,9 +188,6 @@ app.get('/', (req, res) => {
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
-
-// Permite que o servidor processe dados JSON no corpo da requisição
-app.use(express.json());
 
 // Rota POST para verificar a matrícula
 app.post('/api/verificar-acesso', async (req, res) => {
