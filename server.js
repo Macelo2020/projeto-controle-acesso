@@ -43,6 +43,9 @@ console.log(`Carregadas ${listaDeFuncionarios.length} matrículas para a memóri
 // ----------------------------------------------------
 const dbURI = process.env.MONGODB_URI;
 
+// Apenas para este teste, a linha abaixo substituirá a sua
+//const dbURI = 'mongodb+srv://adminms:Sq0ef7yAHC1s97AT@cluster0.isivcof.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+
 if (!dbURI) {
     console.error('Erro: A variável de ambiente MONGODB_URI não está definida.');
     process.exit(1);
