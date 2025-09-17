@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const relatorioTableBody = document.querySelector('#relatorioTable tbody');
     const adminMessage = document.getElementById('adminMessage');
     const searchInput = document.getElementById('searchInput'); // Novo campo de pesquisa
+    const dataInput = document.getElementById('dataRelatorio'); // Novo campo de data
     let registrosGlobais = []; // Armazenará todos os registros para filtrar
 
     // Função para mostrar mensagens de status
@@ -35,18 +36,26 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             relatorioTableBody.appendChild(row);
         });
-        showMessage(`Relatório diário carregado com sucesso! Total: ${registros.length} acessos.`, false);
+        showMessage(`Relatório carregado com sucesso! Total: ${registros.length} acessos.`, false);
     };
 
     // Função para buscar e exibir o relatório completo
     const fetchAndDisplayReport = async () => {
+        adminMessage.style.display = 'none';
+        const dataSelecionada = dataInput.value;
+        const url = dataSelecionada ? `/api/admin/relatorio?data=${dataSelecionada}` : '/api/admin/relatorio';
+
         try {
-            const response = await fetch('/api/admin/relatorio');
-            registrosGlobais = await response.json(); // Armazena os dados
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Erro ao carregar o relatório');
+            }
+            const registros = await response.json();
+            registrosGlobais = registros; // Armazena os dados
             renderTable(registrosGlobais); // Renderiza a tabela completa
         } catch (error) {
             console.error('Erro ao buscar o relatório:', error);
-            showMessage('Erro ao carregar o relatório.', true);
+            showMessage('Erro ao carregar o relatório. Tente novamente.', true);
         }
     };
 
@@ -66,7 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners
     btnGerarRelatorio.addEventListener('click', fetchAndDisplayReport);
     btnBaixarRelatorio.addEventListener('click', () => {
-        window.location.href = '/api/admin/baixar-relatorio';
+        const dataSelecionada = dataInput.value;
+        const url = dataSelecionada ? `/api/admin/baixar-relatorio?data=${dataSelecionada}` : '/api/admin/baixar-relatorio';
+        window.location.href = url;
     });
     btnZerarRelatorio.addEventListener('click', async () => {
         const senha = prompt("Digite a senha para zerar o relatório:");
@@ -95,7 +106,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Adiciona o listener para a pesquisa
     searchInput.addEventListener('input', filterData);
-
-    // Carrega o relatório automaticamente ao abrir a página
-    fetchAndDisplayReport();
 });
