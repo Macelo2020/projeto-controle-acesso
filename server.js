@@ -10,8 +10,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Senha para a rota de administração
+// Senhas para as rotas de administração (carregadas do .env)
 const SENHA_ADMIN_ZERAR_RELATORIO = process.env.SENHA_ADMIN_ZERAR_RELATORIO;
+const SENHA_ADMIN_GERAL = process.env.SENHA_ADMIN_GERAL;
 
 // ----------------------------------------------------
 // Lógica de Leitura de Matrículas e Nomes
@@ -43,15 +44,11 @@ console.log(`Carregadas ${listaDeFuncionarios.length} matrículas para a memóri
 // ----------------------------------------------------
 const dbURI = process.env.MONGODB_URI;
 
-// Apenas para este teste, a linha abaixo substituirá a sua
-//const dbURI = 'mongodb+srv://adminms:Sq0ef7yAHC1s97AT@cluster0.isivcof.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-
 if (!dbURI) {
     console.error('Erro: A variável de ambiente MONGODB_URI não está definida.');
     process.exit(1);
 }
 
-// Conectando ao MongoDB Atlas usando a URI do arquivo .env
 mongoose.connect(dbURI)
     .then(() => {
         console.log('Conexão com o MongoDB estabelecida!');
@@ -92,8 +89,24 @@ const acessoSchema = new mongoose.Schema({
 const Acesso = mongoose.model('Acesso', acessoSchema);
 
 // ----------------------------------------------------
-// Funções de Lógica (Refatoradas)
+// Funções de Lógica (Refatoradas e Melhoradas)
 // ----------------------------------------------------
+
+// Função para obter o início e o fim do dia com base no fuso horário do Brasil
+function getInicioFimDoDia(data, fusoHorario = "America/Sao_Paulo") {
+    const dataObj = new Date(data);
+    const ano = dataObj.toLocaleString("en-US", { year: 'numeric', timeZone: fusoHorario });
+    const mes = dataObj.toLocaleString("en-US", { month: '2-digit', timeZone: fusoHorario });
+    const dia = dataObj.toLocaleString("en-US", { day: '2-digit', timeZone: fusoHorario });
+    
+    const dataString = `${ano}-${mes}-${dia}`;
+    
+    // Converte a data de volta para um objeto Date, mas agora ancorado no início do dia no Brasil
+    const inicioDoDia = new Date(new Date(dataString).getTime() + (3 * 60 * 60 * 1000)); // Adiciona 3 horas para compensar UTC
+    const fimDoDia = new Date(inicioDoDia.getTime() + (24 * 60 * 60 * 1000) - 1); // Fim do dia
+
+    return { inicioDoDia, fimDoDia };
+}
 
 // Função para registrar acesso no MongoDB
 async function registrarAcesso(matricula, nome, status) {
@@ -113,9 +126,7 @@ async function registrarAcesso(matricula, nome, status) {
 
 // Função para verificar se a matrícula já foi usada hoje (no MongoDB)
 async function jaAcessouHoje(matricula) {
-    const dataDeHoje = new Date().toISOString().split('T')[0];
-    const inicioDoDia = new Date(`${dataDeHoje}T00:00:00.000Z`);
-    const fimDoDia = new Date(`${dataDeHoje}T23:59:59.999Z`);
+    const { inicioDoDia, fimDoDia } = getInicioFimDoDia(new Date());
 
     try {
         const acessoExistente = await Acesso.findOne({
@@ -130,13 +141,11 @@ async function jaAcessouHoje(matricula) {
     }
 }
 
-// Nova função para buscar os dados de acesso (retorna JSON)
+// Função para buscar os dados de acesso (retorna JSON)
 async function buscarRegistrosDoDia(dataParaRelatorio) {
     try {
-        const data = dataParaRelatorio ? new Date(dataParaRelatorio) : new Date();
-        const dataString = data.toISOString().split('T')[0];
-        const inicioDoDia = new Date(`${dataString}T00:00:00.000Z`);
-        const fimDoDia = new Date(`${dataString}T23:59:59.999Z`);
+        const dataBase = dataParaRelatorio ? new Date(`${dataParaRelatorio}T12:00:00.000Z`) : new Date();
+        const { inicioDoDia, fimDoDia } = getInicioFimDoDia(dataBase);
         
         return await Acesso.find({
             dataHora: { $gte: inicioDoDia, $lte: fimDoDia }
@@ -161,42 +170,55 @@ async function gerarRelatorioComoTexto(registrosDoDia) {
         }
     });
 
-    const dataString = new Date().toISOString().split('T')[0];
+    const dataString = new Date().toLocaleDateString('pt-BR');
     const relatorio = `
 Relatório Diário - ${dataString}
 ----------------------------------
 Total de Solicitações: ${registrosDoDia.length}
 Acessos Concedidos: ${acessosConcedidos}
-Matrículas Negadas: ${matriculasNegadas.join(', ')}
+Matrículas Negadas: ${[...new Set(matriculasNegadas)].join(', ')}
 ----------------------------------
 `;
     return relatorio;
 }
 
 // ----------------------------------------------------
-// Rotas da API
+// Middleware de Autenticação para Rotas Admin
+// ----------------------------------------------------
+function autenticarAdmin(req, res, next) {
+    const senha = req.query.senha || (req.body && req.body.senha);
+
+    if (senha === SENHA_ADMIN_GERAL) {
+        return next(); // Senha correta, continua para a rota
+    }
+
+    res.status(401).send('Acesso não autorizado. Senha de administrador necessária.');
+}
+
+// ----------------------------------------------------
+// Rotas da API (Atualizadas com Proteção)
 // ----------------------------------------------------
 
-// Middleware
+// Middlewares globais
 app.use(express.static('public'));
 app.use(express.json());
-app.use(cors()); // Permite requisições de diferentes origens
+app.use(cors());
 
-// Rota para a página do funcionário (página inicial)
+// Rota para a página do funcionário (página inicial) - PÚBLICA
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Rota para a página de administração
 app.get('/admin', (req, res) => {
+    // A proteção real acontece nas rotas da API que buscam os dados.
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Rota POST para verificar a matrícula
+// Rota POST para verificar a matrícula - PÚBLICA
 app.post('/api/verificar-acesso', async (req, res) => {
     const { matricula } = req.body;
     
-    // Validação básica da entrada para prevenção
     if (!matricula || typeof matricula !== 'string' || matricula.trim() === '') {
         return res.status(400).json({ mensagem: 'Matrícula inválida.' });
     }
@@ -217,15 +239,15 @@ app.post('/api/verificar-acesso', async (req, res) => {
     res.status(200).json({ mensagem: 'Acesso concedido. Bom apetite!', nome: funcionario.nome, status: 'aprovado' });
 });
 
-// Rota GET para buscar os registros de acesso (agora retorna JSON)
-app.get('/api/admin/relatorio', async (req, res) => {
+// Rota GET para buscar os registros de acesso - PROTEGIDA
+app.get('/api/admin/relatorio', autenticarAdmin, async (req, res) => {
     const dataParaRelatorio = req.query.data;
     const registros = await buscarRegistrosDoDia(dataParaRelatorio);
     res.status(200).json(registros);
 });
 
-// Rota GET para baixar o relatório diário (mantida, mas mais robusta)
-app.get('/api/admin/baixar-relatorio', async (req, res) => {
+// Rota GET para baixar o relatório diário - PROTEGIDA
+app.get('/api/admin/baixar-relatorio', autenticarAdmin, async (req, res) => {
     const dataParaRelatorio = req.query.data;
     const dataString = dataParaRelatorio || new Date().toISOString().split('T')[0];
     const nomeDoArquivo = `relatorio-diario-${dataString}.txt`;
@@ -234,7 +256,6 @@ app.get('/api/admin/baixar-relatorio', async (req, res) => {
     const relatorioTexto = await gerarRelatorioComoTexto(registros);
 
     const pastaRelatorios = path.join(__dirname, 'relatorios');
-
     if (!fs.existsSync(pastaRelatorios)) {
         fs.mkdirSync(pastaRelatorios);
     }
@@ -252,7 +273,7 @@ app.get('/api/admin/baixar-relatorio', async (req, res) => {
     }
 });
 
-// Rota POST de acesso exclusivo para zerar o relatório (limpa a coleção no MongoDB)
+// Rota POST para zerar o relatório - PROTEGIDA COM SENHA PRÓPRIA
 app.post('/api/admin/zerar', async (req, res) => {
     const { senha } = req.body;
 

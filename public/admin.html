@@ -30,58 +30,156 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="logo-area">
-            <img src="images/hospital-sao-vicente-logo.png" alt="Logo Hospital São Vicente de Paulo" class="hospital-logo">
-            <h1>Painel de Administração</h1>
-            <h2>Refeitório - Hospital São Vicente de Paulo</h2>
-        </header>
+    <body>
+    <h1>Painel de Administração</h1>
 
-        <main class="admin-main">
-            <p>Gerenciamento de Acessos ao Refeitório.</p>
-            
-            <div class="admin-actions">
-                <label for="dataRelatorio">Filtrar por data:</label>
-                <input type="date" id="dataRelatorio">
-                
-                <button id="btnGerarRelatorio">
-                    <span class="material-icons">visibility</span> Ver Relatório
-                </button>
-                <button id="btnBaixarRelatorio">
-                    <span class="material-icons">download</span> Baixar Relatório Diário
-                </button>
-                <button id="btnZerarRelatorio">
-                    <span class="material-icons">delete_forever</span> Zerar Relatório Diário
-                </button>
-                <input type="text" id="searchInput" placeholder="Pesquisar por Matrícula, Nome ou Status...">
-            </div>
-
-            <div id="relatorioTexto">
-                <div id="adminMessage" class="message-area" aria-live="polite"></div>
-                <div class="table-container">
-                    <table id="relatorioTable">
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Matrícula</th>
-                                <th>Nome</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-
-        <footer class="developer-logo-area">
-            <img src="images/blue-frog-logo.png" alt="Logo Blue Frog Creative Solutions" class="developer-logo">
-            <p class="copyright-text">© 2025 - Hospital São Vicente de Paulo - Todos os direitos reservados.</p>
-            <p class="developer-text">Criação e desenvolvimento: Blue Frog Creative Solutions</p>
-        </footer>
+    <div id="login-container">
+        <h2>Acesso Restrito</h2>
+        <p>Por favor, insira a senha de administrador para continuar.</p>
+        <input type="password" id="senha-admin" placeholder="Digite a senha">
+        <button id="btn-acessar">Acessar</e-button>
+        <p id="mensagem-erro" style="color: red;"></p>
     </div>
 
-    <script src="admin.js"></script>
+    <div id="relatorio-container" style="display: none;">
+        <h2>Relatório de Acessos</h2>
+        <label for="data-relatorio">Filtrar por data:</label>
+        <input type="date" id="data-relatorio">
+        <button id="btn-filtrar">Buscar</button>
+        <br><br>
+        <button id="btn-baixar-relatorio">Baixar Relatório</button>
+        <hr>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Matrícula</th>
+                    <th>Nome</th>
+                    <th>Status</th>
+                    <th>Data e Hora</th>
+                </tr>
+            </thead>
+            <tbody id="corpo-tabela-relatorio">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Espera o HTML carregar completamente
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- 1. Mapeamento dos Elementos do HTML ---
+    const loginContainer = document.getElementById('login-container');
+    const relatorioContainer = document.getElementById('relatorio-container');
+    
+    const inputSenha = document.getElementById('senha-admin');
+    const btnAcessar = document.getElementById('btn-acessar');
+    const mensagemErro = document.getElementById('mensagem-erro');
+
+    const corpoTabela = document.getElementById('corpo-tabela-relatorio');
+    const btnBaixar = document.getElementById('btn-baixar-relatorio');
+    const inputData = document.getElementById('data-relatorio');
+    const btnFiltrar = document.getElementById('btn-filtrar');
+
+    // Variável para guardar a senha após o login bem-sucedido
+    let senhaAdminAutenticada = null;
+
+    // --- 2. Função para buscar e exibir o relatório ---
+    async function buscarRelatorio() {
+        // Se não tiver senha, não faz nada
+        if (!senhaAdminAutenticada) {
+            console.error('Tentativa de buscar relatório sem senha.');
+            return;
+        }
+
+        const dataSelecionada = inputData.value;
+        let url = `/api/admin/relatorio?senha=${senhaAdminAutenticada}`;
+
+        if (dataSelecionada) {
+            url += `&data=${dataSelecionada}`;
+        }
+
+        try {
+            const response = await fetch(url);
+
+            // SE A SENHA ESTIVER ERRADA ou houver outro erro
+            if (!response.ok) {
+                // Se o erro for 401 (Não Autorizado), a senha está errada
+                if (response.status === 401) {
+                    mensagemErro.textContent = 'Senha incorreta. Tente novamente.';
+                } else {
+                    mensagemErro.textContent = `Erro ao buscar dados: ${response.statusText}`;
+                }
+                // Mostra a tela de login novamente
+                loginContainer.style.display = 'block';
+                relatorioContainer.style.display = 'none';
+                senhaAdminAutenticada = null; // Limpa a senha
+                return;
+            }
+
+            // SE A SENHA ESTIVER CORRETA
+            const registros = await response.json();
+            
+            // Mostra o relatório e esconde o login
+            loginContainer.style.display = 'none';
+            relatorioContainer.style.display = 'block';
+
+            // Limpa a tabela antes de preencher
+            corpoTabela.innerHTML = ''; 
+
+            // Preenche a tabela com os novos dados
+            registros.forEach(reg => {
+                const dataHora = new Date(reg.dataHora).toLocaleString('pt-BR');
+                const linha = `<tr>
+                                <td>${reg.matricula}</td>
+                                <td>${reg.nome}</td>
+                                <td>${reg.status}</td>
+                                <td>${dataHora}</td>
+                               </tr>`;
+                corpoTabela.innerHTML += linha;
+            });
+
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            mensagemErro.textContent = 'Erro de conexão com o servidor.';
+        }
+    }
+
+    // --- 3. Lógica dos Eventos ---
+
+    // Evento para o botão de ACESSAR (Login)
+    btnAcessar.addEventListener('click', () => {
+        const senhaDigitada = inputSenha.value;
+        if (!senhaDigitada) {
+            mensagemErro.textContent = 'Por favor, digite uma senha.';
+            return;
+        }
+        // Guarda a senha e tenta buscar o relatório
+        senhaAdminAutenticada = senhaDigitada;
+        mensagemErro.textContent = ''; // Limpa mensagens de erro antigas
+        buscarRelatorio();
+    });
+
+    // Evento para o botão de FILTRAR por data
+    btnFiltrar.addEventListener('click', buscarRelatorio);
+
+    // Evento para o botão de BAIXAR o relatório
+    btnBaixar.addEventListener('click', () => {
+        if (!senhaAdminAutenticada) {
+            alert('Sessão expirada. Por favor, faça o login novamente.');
+            return;
+        }
+
+        const dataSelecionada = inputData.value;
+        let url = `/api/admin/baixar-relatorio?senha=${senhaAdminAutenticada}`;
+
+        if (dataSelecionada) {
+            url += `&data=${dataSelecionada}`;
+        }
+
+        // Redireciona o navegador para a URL de download
+        window.location.href = url;
+    });
+});// Todo o nosso código JS vai aqui dentro
+    </script>
 </body>
 </html>
