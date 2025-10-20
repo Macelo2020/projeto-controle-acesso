@@ -142,14 +142,23 @@ async function jaAcessouHoje(matricula) {
 }
 
 // Função para buscar os dados de acesso (retorna JSON)
-async function buscarRegistrosDoDia(dataParaRelatorio) {
+async function buscarRegistrosDoDia(dataParaRelatorio, termoBusca, criterioBusca) {
     try {
         const dataBase = dataParaRelatorio ? new Date(`${dataParaRelatorio}T12:00:00.000Z`) : new Date();
         const { inicioDoDia, fimDoDia } = getInicioFimDoDia(dataBase);
         
-        return await Acesso.find({
+        // Objeto de consulta base (sempre filtra por data)
+        const query = {
             dataHora: { $gte: inicioDoDia, $lte: fimDoDia }
-        }).sort({ dataHora: 1 }); // Ordena do mais antigo para o mais novo
+        };
+
+        // Adiciona o filtro de busca, se houver
+        if (termoBusca && criterioBusca) {
+            // Usa regex para busca case-insensitive (não diferencia maiúsculas de minúsculas)
+            query[criterioBusca] = { $regex: termoBusca, $options: 'i' };
+        }
+        
+        return await Acesso.find(query).sort({ dataHora: 1 }); // Ordena do mais antigo para o mais novo
 
     } catch (erro) {
         console.error('Erro ao buscar registros no MongoDB:', erro);
@@ -241,8 +250,8 @@ app.post('/api/verificar-acesso', async (req, res) => {
 
 // Rota GET para buscar os registros de acesso - PROTEGIDA
 app.get('/api/admin/relatorio', autenticarAdmin, async (req, res) => {
-    const dataParaRelatorio = req.query.data;
-    const registros = await buscarRegistrosDoDia(dataParaRelatorio);
+    const { data, busca, criterio } = req.query;
+    const registros = await buscarRegistrosDoDia(data, busca, criterio);
     res.status(200).json(registros);
 });
 

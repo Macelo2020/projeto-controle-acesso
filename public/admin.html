@@ -1,54 +1,55 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Administração</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* Estilos adicionais para aprimorar a tabela */
-        .admin-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        #searchInput {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            flex-grow: 1;
-        }
-        .acesso-concedido {
-            background-color: #d4edda; /* Verde claro */
-        }
-        .acesso-negado {
-            background-color: #f8d7da; /* Vermelho claro */
-        }
+        body { font-family: sans-serif; padding: 20px; }
+        #relatorio-container, #login-container { max-width: 800px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .controles { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .resumo { background-color: #e7f3fe; border-left: 6px solid #2196F3; margin: 20px 0; padding: 15px; }
     </style>
 </head>
 <body>
-    <body>
     <h1>Painel de Administração</h1>
 
     <div id="login-container">
         <h2>Acesso Restrito</h2>
         <p>Por favor, insira a senha de administrador para continuar.</p>
         <input type="password" id="senha-admin" placeholder="Digite a senha">
-        <button id="btn-acessar">Acessar</e-button>
+        <button id="btn-acessar">Acessar</button>
         <p id="mensagem-erro" style="color: red;"></p>
     </div>
 
     <div id="relatorio-container" style="display: none;">
         <h2>Relatório de Acessos</h2>
-        <label for="data-relatorio">Filtrar por data:</label>
-        <input type="date" id="data-relatorio">
-        <button id="btn-filtrar">Buscar</button>
-        <br><br>
-        <button id="btn-baixar-relatorio">Baixar Relatório</button>
+
+        <div class="controles">
+            <label for="data-relatorio">Data:</label>
+            <input type="date" id="data-relatorio">
+
+            <label for="filtro-texto">Buscar:</label>
+            <input type="text" id="filtro-texto" placeholder="Digite para buscar...">
+
+            <label for="filtro-criterio">Buscar por:</label>
+            <select id="filtro-criterio">
+                <option value="nome">Nome</option>
+                <option value="matricula">Matrícula</option>
+                <option value="status">Status</option>
+            </select>
+
+            <button id="btn-filtrar">Buscar</button>
+        </div>
+        
+        <button id="btn-baixar-relatorio">Baixar Relatório Completo do Dia</button>
         <hr>
+
+        <div id="resumo-acessos" class="resumo"></div>
+
         <table border="1">
             <thead>
                 <tr>
@@ -64,122 +65,110 @@
     </div>
 
     <script>
-        // Espera o HTML carregar completamente
-document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- 1. Mapeamento dos Elementos do HTML ---
+        const loginContainer = document.getElementById('login-container');
+        const relatorioContainer = document.getElementById('relatorio-container');
+        
+        const inputSenha = document.getElementById('senha-admin');
+        const btnAcessar = document.getElementById('btn-acessar');
+        const mensagemErro = document.getElementById('mensagem-erro');
 
-    // --- 1. Mapeamento dos Elementos do HTML ---
-    const loginContainer = document.getElementById('login-container');
-    const relatorioContainer = document.getElementById('relatorio-container');
-    
-    const inputSenha = document.getElementById('senha-admin');
-    const btnAcessar = document.getElementById('btn-acessar');
-    const mensagemErro = document.getElementById('mensagem-erro');
+        const corpoTabela = document.getElementById('corpo-tabela-relatorio');
+        const btnBaixar = document.getElementById('btn-baixar-relatorio');
+        const inputData = document.getElementById('data-relatorio');
+        const btnFiltrar = document.getElementById('btn-filtrar');
+        
+        // Novos elementos
+        const inputFiltroTexto = document.getElementById('filtro-texto');
+        const selectFiltroCriterio = document.getElementById('filtro-criterio');
+        const resumoAcessos = document.getElementById('resumo-acessos');
 
-    const corpoTabela = document.getElementById('corpo-tabela-relatorio');
-    const btnBaixar = document.getElementById('btn-baixar-relatorio');
-    const inputData = document.getElementById('data-relatorio');
-    const btnFiltrar = document.getElementById('btn-filtrar');
+        let senhaAdminAutenticada = null;
 
-    // Variável para guardar a senha após o login bem-sucedido
-    let senhaAdminAutenticada = null;
+        // --- 2. Função para buscar e exibir o relatório ---
+        async function buscarRelatorio() {
+            if (!senhaAdminAutenticada) return;
 
-    // --- 2. Função para buscar e exibir o relatório ---
-    async function buscarRelatorio() {
-        // Se não tiver senha, não faz nada
-        if (!senhaAdminAutenticada) {
-            console.error('Tentativa de buscar relatório sem senha.');
-            return;
-        }
+            const dataSelecionada = inputData.value;
+            const termoBusca = inputFiltroTexto.value;
+            const criterioBusca = selectFiltroCriterio.value;
 
-        const dataSelecionada = inputData.value;
-        let url = `/api/admin/relatorio?senha=${senhaAdminAutenticada}`;
-
-        if (dataSelecionada) {
-            url += `&data=${dataSelecionada}`;
-        }
-
-        try {
-            const response = await fetch(url);
-
-            // SE A SENHA ESTIVER ERRADA ou houver outro erro
-            if (!response.ok) {
-                // Se o erro for 401 (Não Autorizado), a senha está errada
-                if (response.status === 401) {
-                    mensagemErro.textContent = 'Senha incorreta. Tente novamente.';
-                } else {
-                    mensagemErro.textContent = `Erro ao buscar dados: ${response.statusText}`;
-                }
-                // Mostra a tela de login novamente
-                loginContainer.style.display = 'block';
-                relatorioContainer.style.display = 'none';
-                senhaAdminAutenticada = null; // Limpa a senha
-                return;
+            // Constrói a URL com todos os parâmetros
+            let url = `/api/admin/relatorio?senha=${senhaAdminAutenticada}`;
+            if (dataSelecionada) url += `&data=${dataSelecionada}`;
+            if (termoBusca) {
+                url += `&busca=${encodeURIComponent(termoBusca)}&criterio=${criterioBusca}`;
             }
 
-            // SE A SENHA ESTIVER CORRETA
-            const registros = await response.json();
-            
-            // Mostra o relatório e esconde o login
-            loginContainer.style.display = 'none';
-            relatorioContainer.style.display = 'block';
+            try {
+                const response = await fetch(url);
 
-            // Limpa a tabela antes de preencher
-            corpoTabela.innerHTML = ''; 
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        mensagemErro.textContent = 'Senha incorreta. Tente novamente.';
+                        loginContainer.style.display = 'block';
+                        relatorioContainer.style.display = 'none';
+                        senhaAdminAutenticada = null;
+                    } else {
+                        mensagemErro.textContent = `Erro ao buscar dados: ${response.statusText}`;
+                    }
+                    return;
+                }
 
-            // Preenche a tabela com os novos dados
-            registros.forEach(reg => {
-                const dataHora = new Date(reg.dataHora).toLocaleString('pt-BR');
-                const linha = `<tr>
-                                <td>${reg.matricula}</td>
-                                <td>${reg.nome}</td>
-                                <td>${reg.status}</td>
-                                <td>${dataHora}</td>
-                               </tr>`;
-                corpoTabela.innerHTML += linha;
-            });
+                const registros = await response.json();
+                
+                loginContainer.style.display = 'none';
+                relatorioContainer.style.display = 'block';
 
-        } catch (error) {
-            console.error('Erro na requisição:', error);
-            mensagemErro.textContent = 'Erro de conexão com o servidor.';
+                // Limpa e preenche a tabela
+                corpoTabela.innerHTML = ''; 
+                registros.forEach(reg => {
+                    const dataHora = new Date(reg.dataHora).toLocaleString('pt-BR');
+                    const linha = `<tr>
+                                    <td>${reg.matricula}</td>
+                                    <td>${reg.nome}</td>
+                                    <td>${reg.status}</td>
+                                    <td>${dataHora}</td>
+                                   </tr>`;
+                    corpoTabela.innerHTML += linha;
+                });
+
+                // Calcula e exibe o resumo
+                const acessosConcedidos = registros.filter(reg => reg.status === 'concedido').length;
+                resumoAcessos.innerHTML = `<strong>Acessos Concedidos:</strong> ${acessosConcedidos} | <strong>Total de Registros Exibidos:</strong> ${registros.length}`;
+
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                mensagemErro.textContent = 'Erro de conexão com o servidor.';
+            }
         }
-    }
 
-    // --- 3. Lógica dos Eventos ---
+        // --- 3. Lógica dos Eventos ---
+        btnAcessar.addEventListener('click', () => {
+            const senhaDigitada = inputSenha.value;
+            if (!senhaDigitada) {
+                mensagemErro.textContent = 'Por favor, digite uma senha.';
+                return;
+            }
+            senhaAdminAutenticada = senhaDigitada;
+            mensagemErro.textContent = '';
+            buscarRelatorio();
+        });
 
-    // Evento para o botão de ACESSAR (Login)
-    btnAcessar.addEventListener('click', () => {
-        const senhaDigitada = inputSenha.value;
-        if (!senhaDigitada) {
-            mensagemErro.textContent = 'Por favor, digite uma senha.';
-            return;
-        }
-        // Guarda a senha e tenta buscar o relatório
-        senhaAdminAutenticada = senhaDigitada;
-        mensagemErro.textContent = ''; // Limpa mensagens de erro antigas
-        buscarRelatorio();
+        btnFiltrar.addEventListener('click', buscarRelatorio);
+
+        btnBaixar.addEventListener('click', () => {
+            if (!senhaAdminAutenticada) {
+                alert('Sessão expirada. Por favor, faça o login novamente.');
+                return;
+            }
+            const dataSelecionada = inputData.value;
+            let url = `/api/admin/baixar-relatorio?senha=${senhaAdminAutenticada}`;
+            if (dataSelecionada) url += `&data=${dataSelecionada}`;
+            window.location.href = url;
+        });
     });
-
-    // Evento para o botão de FILTRAR por data
-    btnFiltrar.addEventListener('click', buscarRelatorio);
-
-    // Evento para o botão de BAIXAR o relatório
-    btnBaixar.addEventListener('click', () => {
-        if (!senhaAdminAutenticada) {
-            alert('Sessão expirada. Por favor, faça o login novamente.');
-            return;
-        }
-
-        const dataSelecionada = inputData.value;
-        let url = `/api/admin/baixar-relatorio?senha=${senhaAdminAutenticada}`;
-
-        if (dataSelecionada) {
-            url += `&data=${dataSelecionada}`;
-        }
-
-        // Redireciona o navegador para a URL de download
-        window.location.href = url;
-    });
-});// Todo o nosso código JS vai aqui dentro
     </script>
 </body>
 </html>
