@@ -93,17 +93,15 @@ const Acesso = mongoose.model('Acesso', acessoSchema);
 // ----------------------------------------------------
 
 // Função para obter o início e o fim do dia com base no fuso horário do Brasil
-function getInicioFimDoDia(data, fusoHorario = "America/Sao_Paulo") {
-    const dataObj = new Date(data);
-    const ano = dataObj.toLocaleString("en-US", { year: 'numeric', timeZone: fusoHorario });
-    const mes = dataObj.toLocaleString("en-US", { month: '2-digit', timeZone: fusoHorario });
-    const dia = dataObj.toLocaleString("en-US", { day: '2-digit', timeZone: fusoHorario });
+// Função para obter o início e o fim do dia (VERSÃO CORRIGIDA E MAIS ROBUSTA)
+function getInicioFimDoDia(dataString) { // Agora recebe a string 'AAAA-MM-DD'
+    // Exemplo de dataString: "2025-10-19"
     
-    const dataString = `${ano}-${mes}-${dia}`;
+    // Cria o início do dia explicitamente no fuso horário do Brasil (-03:00)
+    const inicioDoDia = new Date(`${dataString}T00:00:00.000-03:00`);
     
-    // Converte a data de volta para um objeto Date, mas agora ancorado no início do dia no Brasil
-    const inicioDoDia = new Date(new Date(dataString).getTime() + (3 * 60 * 60 * 1000)); // Adiciona 3 horas para compensar UTC
-    const fimDoDia = new Date(inicioDoDia.getTime() + (24 * 60 * 60 * 1000) - 1); // Fim do dia
+    // Cria o fim do dia explicitamente no fuso horário do Brasil (-03:00)
+    const fimDoDia = new Date(`${dataString}T23:59:59.999-03:00`);
 
     return { inicioDoDia, fimDoDia };
 }
@@ -142,10 +140,14 @@ async function jaAcessouHoje(matricula) {
 }
 
 // Função para buscar os dados de acesso (retorna JSON)
+// Função para buscar os dados de acesso (retorna JSON)
 async function buscarRegistrosDoDia(dataParaRelatorio, termoBusca, criterioBusca) {
     try {
-        const dataBase = dataParaRelatorio ? new Date(`${dataParaRelatorio}T12:00:00.000Z`) : new Date();
-        const { inicioDoDia, fimDoDia } = getInicioFimDoDia(dataBase);
+        // Se nenhuma data for fornecida, usa a data de hoje no fuso de São Paulo
+        const dataHojeBrasil = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+        const dataString = dataParaRelatorio || dataHojeBrasil; // Usa a data do filtro ou a de hoje
+
+        const { inicioDoDia, fimDoDia } = getInicioFimDoDia(dataString);
         
         // Objeto de consulta base (sempre filtra por data)
         const query = {
