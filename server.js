@@ -57,18 +57,30 @@ mongoose.connect(dbURI)
         });
 
         // Tarefa Agendada: Zerar o Relatório Diário
-        cron.schedule('0 0 * * *', async () => {
-            try {
-                const resultado = await Acesso.deleteMany({});
-                console.log(`Tarefa agendada: Relatório diário zerado com sucesso. ${resultado.deletedCount} registros removidos.`);
-            } catch (erro) {
-                console.error('Erro na tarefa agendada ao zerar o relatório:', erro);
-            }
-        }, {
-            scheduled: true,
-            timezone: "America/Sao_Paulo"
-        });
-        console.log('Tarefa de limpeza diária agendada para meia-noite.');
+        // Tarefa Agendada: Apagar registros com mais de 30 dias   
+        // Tarefa Agendada: Apagar registros com mais de 30 dias
+cron.schedule('0 0 * * *', async () => {
+    try {
+        // Calcula a data de 30 dias atrás a partir de agora
+        const dataLimite = new Date();
+        dataLimite.setDate(dataLimite.getDate() - 30);
+
+        // Apaga apenas os documentos cuja dataHora seja MENOR QUE a dataLimite
+        const resultado = await Acesso.deleteMany({ dataHora: { $lt: dataLimite } });
+        
+        if (resultado.deletedCount > 0) {
+            console.log(`Tarefa agendada: Limpeza de registros antigos concluída. ${resultado.deletedCount} registros com mais de 30 dias foram removidos.`);
+        } else {
+            console.log(`Tarefa agendada: Nenhum registro antigo para limpar.`);
+        }
+    } catch (erro) {
+        console.error('Erro na tarefa agendada ao limpar registros antigos:', erro);
+    }
+}, {
+    scheduled: true,
+    timezone: "America/Sao_Paulo"
+});
+console.log('Tarefa de limpeza de registros antigos (mais de 30 dias) agendada para meia-noite.');
 
     })
     .catch((err) => {
