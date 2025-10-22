@@ -56,31 +56,29 @@ mongoose.connect(dbURI)
             console.log(`Servidor rodando em http://localhost:${PORT}`);
         });
 
-        // Tarefa Agendada: Zerar o Relatório Diário
-        // Tarefa Agendada: Apagar registros com mais de 30 dias   
         // Tarefa Agendada: Apagar registros com mais de 30 dias
-cron.schedule('0 0 * * *', async () => {
-    try {
-        // Calcula a data de 30 dias atrás a partir de agora
-        const dataLimite = new Date();
-        dataLimite.setDate(dataLimite.getDate() - 30);
+        cron.schedule('0 0 * * *', async () => {
+            try {
+                // Calcula a data de 30 dias atrás a partir de agora
+                const dataLimite = new Date();
+                dataLimite.setDate(dataLimite.getDate() - 30);
 
-        // Apaga apenas os documentos cuja dataHora seja MENOR QUE a dataLimite
-        const resultado = await Acesso.deleteMany({ dataHora: { $lt: dataLimite } });
-        
-        if (resultado.deletedCount > 0) {
-            console.log(`Tarefa agendada: Limpeza de registros antigos concluída. ${resultado.deletedCount} registros com mais de 30 dias foram removidos.`);
-        } else {
-            console.log(`Tarefa agendada: Nenhum registro antigo para limpar.`);
-        }
-    } catch (erro) {
-        console.error('Erro na tarefa agendada ao limpar registros antigos:', erro);
-    }
-}, {
-    scheduled: true,
-    timezone: "America/Sao_Paulo"
-});
-console.log('Tarefa de limpeza de registros antigos (mais de 30 dias) agendada para meia-noite.');
+                // Apaga apenas os documentos cuja dataHora seja MENOR QUE a dataLimite
+                const resultado = await Acesso.deleteMany({ dataHora: { $lt: dataLimite } });
+                
+                if (resultado.deletedCount > 0) {
+                    console.log(`Tarefa agendada: Limpeza de registros antigos concluída. ${resultado.deletedCount} registros com mais de 30 dias foram removidos.`);
+                } else {
+                    console.log(`Tarefa agendada: Nenhum registro antigo para limpar.`);
+                }
+            } catch (erro) {
+                console.error('Erro na tarefa agendada ao limpar registros antigos:', erro);
+            }
+        }, {
+            scheduled: true,
+            timezone: "America/Sao_Paulo"
+        });
+        console.log('Tarefa de limpeza de registros antigos (mais de 30 dias) agendada para meia-noite.');
 
     })
     .catch((err) => {
@@ -104,11 +102,8 @@ const Acesso = mongoose.model('Acesso', acessoSchema);
 // Funções de Lógica (Refatoradas e Melhoradas)
 // ----------------------------------------------------
 
-// Função para obter o início e o fim do dia com base no fuso horário do Brasil
 // Função para obter o início e o fim do dia (VERSÃO CORRIGIDA E MAIS ROBUSTA)
 function getInicioFimDoDia(dataString) { // Agora recebe a string 'AAAA-MM-DD'
-    // Exemplo de dataString: "2025-10-19"
-    
     // Cria o início do dia explicitamente no fuso horário do Brasil (-03:00)
     const inicioDoDia = new Date(`${dataString}T00:00:00.000-03:00`);
     
@@ -134,9 +129,12 @@ async function registrarAcesso(matricula, nome, status) {
     }
 }
 
-// Função para verificar se a matrícula já foi usada hoje (no MongoDB)
+// Função para verificar se a matrícula já foi usada hoje (NOVA VERSÃO CORRIGIDA)
 async function jaAcessouHoje(matricula) {
-    const { inicioDoDia, fimDoDia } = getInicioFimDoDia(new Date());
+    
+    // CORREÇÃO: Pega a data de hoje no formato 'AAAA-MM-DD' de São Paulo
+    const dataHojeBrasil = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+    const { inicioDoDia, fimDoDia } = getInicioFimDoDia(dataHojeBrasil); // Usa a string de data
 
     try {
         const acessoExistente = await Acesso.findOne({
@@ -151,7 +149,6 @@ async function jaAcessouHoje(matricula) {
     }
 }
 
-// Função para buscar os dados de acesso (retorna JSON)
 // Função para buscar os dados de acesso (retorna JSON)
 async function buscarRegistrosDoDia(dataParaRelatorio, termoBusca, criterioBusca) {
     try {
@@ -260,6 +257,42 @@ app.post('/api/verificar-acesso', async (req, res) => {
 
     await registrarAcesso(matricula, funcionario.nome, 'concedido');
     res.status(200).json({ mensagem: 'Acesso concedido. Bom apetite!', nome: funcionario.nome, status: 'aprovado' });
+});
+
+// ----------------------------------------------------
+// Rota da API para o Cardápio do Dia
+// ----------------------------------------------------
+app.get('/api/cardapio-do-dia', (req, res) => {
+    try {
+        // 1. Descobrir o dia da semana em São Paulo
+        const hoje = new Date();
+        const diaDaSemana = hoje.toLocaleDateString('pt-BR', { 
+            weekday: 'long', 
+            timeZone: 'America/Sao_Paulo' 
+        }).toLowerCase();
+        
+        // Ex: 'segunda-feira' -> 'segunda'
+        const diaLimpo = diaDaSemana.split('-')[0]; 
+
+        // 2. Ler o arquivo do cardápio
+        // Usamos readFileSync para ser simples e direto.
+        const caminhoCardapio = path.join(__dirname, 'cardapio.json');
+        const dadosCardapio = fs.readFileSync(caminhoCardapio, 'utf8');
+        const cardapio = JSON.parse(dadosCardapio);
+
+        // 3. Encontrar o prato de hoje
+        const pratoDoDia = cardapio[diaLimpo] || 'Cardápio não disponível';
+
+        // 4. Enviar o prato para o frontend
+        res.status(200).json({ 
+            dia: diaDaSemana.split('-')[0], // ex: "segunda"
+            prato: pratoDoDia 
+        });
+
+    } catch (erro) {
+        console.error('Erro ao buscar cardápio:', erro);
+        res.status(500).json({ prato: 'Erro ao carregar cardápio' });
+    }
 });
 
 // Rota GET para buscar os registros de acesso - PROTEGIDA
