@@ -273,7 +273,7 @@
         const selectFiltroCriterio = document.getElementById('filtro-criterio');
         const resumoAcessos = document.getElementById('resumo-acessos');
         
-        let senhaAdminAutenticada = null;
+        let senhaAdminAutenticada = null; // A variável correta
 
         // --- 2. Função para buscar e exibir o relatório ---
         async function buscarRelatorio() {
@@ -358,8 +358,10 @@
 
         btnFiltrar.addEventListener('click', buscarRelatorio);
 
+        // ****** INÍCIO DA CORREÇÃO ******
         btnBaixar.addEventListener('click', () => {
-            if (!senhaAdminAutentica) {
+            // A variável correta 'senhaAdminAutenticada' é usada aqui
+            if (!senhaAdminAutenticada) { 
                 alert('Sessão expirada. Por favor, faça o login novamente.');
                 // Recarrega a página para o login
                 window.location.reload(); 
@@ -370,6 +372,7 @@
             if (dataSelecionada) url += `&data=${dataSelecionada}`;
             window.location.href = url;
         });
+        // ****** FIM DA CORREÇÃO ******
     });
     </script>
 </body>
