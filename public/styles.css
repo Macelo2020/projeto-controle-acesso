@@ -280,7 +280,9 @@ button.loading {
     background-color: #fff;
     border-radius: 8px;
     padding: 20px;
-    margin-top: 20px;
+    /* Ajuste as margens aqui */
+    margin-top: 20px; /* Margem do topo para separar do formulário */
+    margin-bottom: 30px; /* <--- AQUI: Diminuindo a margem inferior */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid #eee;
     text-align: center;
@@ -289,12 +291,13 @@ button.loading {
     margin-right: auto;
 }
 
+/* O resto dos estilos do cardápio continuam... */
 .cardapio-titulo {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #0056b3; /* Um azul para destacar */
+    color: #0056b3;
     margin: 0 0 10px 0;
-    text-transform: capitalize; /* Deixa o dia da semana bonito: "Segunda" */
+    text-transform: capitalize;
 }
 
 .cardapio-prato {
