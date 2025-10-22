@@ -1,43 +1,549 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificação de Acesso - Refeitório</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>Administração - Controle de Refeitório</title>
+    <style>
+        /* --- ESTILOS GLOBAIS --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            transition: background-color 0.5s ease;
+        }
+
+        /* --- 1. TELA DE LOGIN (ESTADO INICIAL) --- */
+        body.login-state {
+            background-image: linear-gradient(135deg, #00467f, #0072c6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #login-container {
+            background-color: #ffffff;
+            padding: 2.5rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 380px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .login-header .icon {
+            width: 40px;
+            height: 40px;
+            color: #0056b3;
+            margin-bottom: 1rem;
+        }
+        
+        #login-container h2 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            font-size: 1.75rem;
+        }
+        
+        #login-container p {
+            margin: 0 0 1.5rem 0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        #login-container label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #444;
+        }
+
+        #login-container input[type="password"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        #login-container button {
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 1.5rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #0056b3;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #login-container button:hover {
+            background-color: #00467f;
+        }
+
+        #mensagem-erro {
+            color: #d93025;
+            margin-top: 1rem;
+            font-weight: 500;
+            min-height: 1.2em;
+        }
+
+        /* --- 2. TELA DE RELATÓRIO (NOVO DESIGN) --- */
+        body.report-state {
+            background-color: #f4f7f6; /* Fundo de "workspace" */
+            padding: 2rem 1rem;
+        }
+        
+        #relatorio-container {
+            background-color: #ffffff;
+            max-width: 1100px;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+            overflow: hidden; /* Para conter o cabeçalho e rodapé arredondados */
+        }
+
+        /* --- CABEÇALHO (COM LOGO) --- */
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Para empurrar o logo para a direita */
+            gap: 1.5rem;
+            background-image: linear-gradient(135deg, #00467f, #0072c6);
+            color: white;
+            padding: 1rem 2rem;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .panel-header .icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        .panel-header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+        
+        .header-logo img {
+            max-height: 35px; /* Altura máxima para o logo */
+            width: auto;
+            display: block;
+        }
+
+        .panel-content {
+            padding: 2rem;
+        }
+
+        .filter-section {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .filter-section h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 0.5rem;
+        }
+
+        .controles {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        
+        .controles > div {
+            flex: 1; /* Faz os campos crescerem */
+            min-width: 150px;
+        }
+        
+        .controles label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .controles input,
+        .controles select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        /* --- BOTÕES --- */
+        .controles button,
+        #btn-baixar-relatorio {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #btn-filtrar {
+             background-color: #28a745; /* Verde Sucesso */
+        }
+        #btn-filtrar:hover {
+            background-color: #218838;
+        }
+        
+        /* --- CORREÇÃO DO BOTÃO BAIXAR --- */
+        #btn-baixar-relatorio {
+            background-color: #007bff; /* Azul Primário */
+            margin-bottom: 1.5rem;
+            color: white; /* <-- CORREÇÃO: Texto branco */
+        }
+        #btn-baixar-relatorio:hover {
+            background-color: #0056b3;
+        }
+
+        .resumo-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            flex: 1;
+            background-color: #fdfdfd;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        }
+        
+        .stat-box .icon {
+            width: 32px;
+            height: 32px;
+            padding: 8px;
+            border-radius: 50%;
+        }
+        
+        .stat-box.concedido .icon {
+            background-color: #e0f8e5;
+            color: #28a745;
+        }
+        
+        .stat-box.total .icon {
+            background-color: #e0f0ff;
+            color: #007bff;
+        }
+        
+        .stat-box .text .label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-box .text .value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+            vertical-align: middle;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            color: #444;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fdfdfd;
+        }
+        
+        tr:hover {
+            background-color: #f1f8ff;
+        }
+        
+        /* --- RODAPÉ COM VERSÃO (ATUALIZADO) --- */
+        .panel-footer {
+            text-align: center;
+            /* Mesmo gradiente e cor do cabeçalho */
+            background-image: linear-gradient(135deg, #00467f, #0072c6);
+            color: white;
+            padding: 1.5rem 2rem;
+            font-size: 0.9rem;
+            line-height: 1.5; /* Melhora a legibilidade das linhas empilhadas */
+        }
+        
+        .footer-line {
+            opacity: 0.9; /* Deixa o texto um pouco mais suave */
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-line:last-child {
+            margin-bottom: 0;
+            opacity: 1;
+            font-weight: 600;
+        }
+
+    </style>
 </head>
-<body>
-    <div class="container">
-        <header class="logo-area">
-            <img src="images/hospital-sao-vicente-logo.png" alt="Logo Hospital São Vicente de Paulo" class="hospital-logo">
-            <h1>Bem-vindo(a) ao Refeitório</h1>
-            <h2>Controle de Acesso ao Refeitório</h2>
-        </header>
+<body class="login-state"> <svg width="0" height="0" style="position:absolute">
+        <symbol id="icon-lock" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
+        </symbol>
+        <symbol id="icon-dashboard" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M13 3v6h8V3m-8 18h8V11h-8M3 21h8v-6H3m0-2h8V3H3v10z"/>
+        </symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </symbol>
+        <symbol id="icon-list" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M3 13h2v-2H3M3 17h2v-2H3M3 9h2V7H3M7 13h14v-2H7M7 17h14v-2H7M7 7v2h14V7M3 5h2V3H3z"/>
+        </symbol>
+    </svg>
 
-        <main>
-            <p>Digite sua matrícula para verificar o acesso:</p>
-            
-            <form id="acessoForm">
-                <input type="text" id="matricula" placeholder="Digite sua matrícula" required>
-                <div class="button-container">
-                    <button type="submit" id="btnVerificar">
-                        <span class="btn-text">Verificar Acesso</span>
-                        <span class="loading-text" style="display: none;">Acessando...</span>
-                    </button>
-                </div>
-            </form>
-            
-            <div id="mensagem" class="message-area" aria-live="polite"></div>
-        </main>
-
-        <footer class="developer-logo-area">
-            <img src="images/blue-frog-logo.png" alt="Logo Blue Frog Creative Solutions" class="developer-logo">
-            <p class="copyright-text">© 2025 - Hospital São Vicente de Paulo - Todos os direitos reservados.</p>
-            <p class="developer-text">Criação e desenvolvimento: Blue Frog Creative Solutions</p>
-        </footer>
+    <div id="login-container">
+        <div class="login-header">
+            <svg class="icon"><use xlink:href="#icon-lock"/></svg>
+            <h2>Acesso Restrito</h2>
+            <p>Painel de Administração do Refeitório</p>
+        </div>
+        <form id="login-form">
+            <label for="senha-admin">Senha</label>
+            <input type="password" id="senha-admin" placeholder="Digite sua senha" required>
+            <button type="button" id="btn-acessar">Entrar</button>
+            <p id="mensagem-erro"></p>
+        </form>
     </div>
 
-    <script src="script.js"></script>
+    <div id="relatorio-container" style="display: none;">
+        
+        <header class="panel-header">
+            <div class="header-title">
+                <svg class="icon"><use xlink:href="#icon-dashboard"/></svg>
+                <h1>Painel de Administração</h1>
+            </div>
+            <div class="header-logo">
+                <img src="/images/logo-bluefrog.png" alt="Logo Blue Frog Smart">
+            </div>
+        </header>
+
+        <div class="panel-content">
+            
+            <section class="filter-section">
+                <h3>Filtros de Busca</h3>
+                <div class="controles">
+                    <div>
+                        <label for="data-relatorio">Filtrar por data:</label>
+                        <input type="date" id="data-relatorio">
+                    </div>
+                    <div>
+                        <label for="filtro-texto">Buscar por termo:</label>
+                        <input type="text" id="filtro-texto" placeholder="Digite para buscar...">
+                    </div>
+                    <div>
+                        <label for="filtro-criterio">Critério:</label>
+                        <select id="filtro-criterio">
+                            <option value="nome">Nome</option>
+                            <option value="matricula">Matrícula</option>
+                            <option value="status">Status</option>
+                        </select>
+                    </div>
+                    <button id="btn-filtrar">Buscar</button>
+                </div>
+            </section>
+
+            <button id="btn-baixar-relatorio">Baixar Relatório do Dia</button>
+
+            <section class="resumo-container" id="resumo-section" style="display: none;">
+                <div class="stat-box concedido">
+                    <svg class="icon"><use xlink:href="#icon-check"/></svg>
+                    <div class="text">
+                        <div class="label">Acessos Concedidos</div>
+                        <div class="value" id="valor-concedido">0</div>
+                    </div>
+                </div>
+                <div class="stat-box total">
+                    <svg class="icon"><use xlink:href="#icon-list"/></svg>
+                    <div class="text">
+                        <div class="label">Total de Registros Exibidos</div>
+                        <div class="value" id="valor-total">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Nome</th>
+                        <th>Status</th>
+                        <th>Data e Hora</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela-relatorio">
+                    </tbody>
+            </table>
+            
+        </div>
+        
+        <footer class="panel-footer">
+            <div class="footer-line">Versão 2.1</div>
+            <div class="footer-line">© 2025 - Hospital São Vicente de Paulo - Todos os direitos reservados.</div>
+            <div class="footer-line">Criação e desenvolvimento: Blue Frog Smart Solutions</div>
+        </footer>
+
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- 1. Mapeamento dos Elementos ---
+        const body = document.body;
+        const loginContainer = document.getElementById('login-container');
+        const relatorioContainer = document.getElementById('relatorio-container');
+        const inputSenha = document.getElementById('senha-admin');
+        const btnAcessar = document.getElementById('btn-acessar');
+        const mensagemErro = document.getElementById('mensagem-erro');
+        const corpoTabela = document.getElementById('corpo-tabela-relatorio');
+        const btnBaixar = document.getElementById('btn-baixar-relatorio');
+        const inputData = document.getElementById('data-relatorio');
+        const btnFiltrar = document.getElementById('btn-filtrar');
+        const inputFiltroTexto = document.getElementById('filtro-texto');
+        const selectFiltroCriterio = document.getElementById('filtro-criterio');
+        
+        const resumoSection = document.getElementById('resumo-section');
+        const valorConcedido = document.getElementById('valor-concedido');
+        const valorTotal = document.getElementById('valor-total');
+        
+        let senhaAdminAutenticada = null;
+
+        // --- 2. Função para buscar e exibir o relatório ---
+        async function buscarRelatorio() {
+            if (!senhaAdminAutenticada) return;
+
+            const dataSelecionada = inputData.value;
+            const termoBusca = inputFiltroTexto.value;
+            const criterioBusca = selectFiltroCriterio.value;
+
+            let url = `/api/admin/relatorio?senha=${senhaAdminAutenticada}`;
+            if (dataSelecionada) url += `&data=${dataSelecionada}`;
+            if (termoBusca) {
+                url += `&busca=${encodeURIComponent(termoBusca)}&criterio=${criterioBusca}`;
+            }
+
+            try {
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        mensagemErro.textContent = 'Senha incorreta. Tente novamente.';
+                        inputSenha.focus();
+                        inputSenha.select();
+                    } else {
+                        mensagemErro.textContent = `Erro ao buscar dados: ${response.statusText}`;
+                    }
+                    return;
+                }
+                
+                const registros = await response.json();
+                
+                // Transição de tela
+                body.classList.remove('login-state');
+                body.classList.add('report-state');
+                loginContainer.style.display = 'none';
+                relatorioContainer.style.display = 'block';
+
+                // Preenche a tabela
+                corpoTabela.innerHTML = ''; 
+                registros.forEach(reg => {
+                    const dataHora = new Date(reg.dataHora).toLocaleString('pt-BR');
+                    const linha = `<tr>
+                                    <td>${reg.matricula}</td>
+                                    <td>${reg.nome}</td>
+                                    <td>${reg.status}</td>
+                                    <td>${dataHora}</td>
+                                   </tr>`;
+                    corpoTabela.innerHTML += linha;
+                });
+
+                // Calcula e exibe o resumo nos novos Stat Cards
+                const acessosConcedidos = registros.filter(reg => reg.status === 'concedido').length;
+                valorConcedido.textContent = acessosConcedidos;
+                valorTotal.textContent = registros.length;
+                resumoSection.style.display = 'flex'; // Mostra a seção de resumo
+
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                mensagemErro.textContent = 'Erro de conexão com o servidor.';
+            }
+        }
+
+        // --- 3. Lógica dos Eventos ---
+        btnAcessar.addEventListener('click', () => {
+            const senhaDigitada = inputSenha.value;
+            if (!senhaDigitada) {
+                mensagemErro.textContent = 'Por favor, digite uma senha.';
+                return;
+            }
+            senhaAdminAutenticada = senhaDigitada;
+            mensagemErro.textContent = '';
+            buscarRelatorio();
+        });
+        
+        inputSenha.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Impede o envio do formulário
+                btnAcessar.click();
+            }
+        });
+
+        btnFiltrar.addEventListener('click', buscarRelatorio);
+
+        btnBaixar.addEventListener('click', () => {
+            if (!senhaAdminAutenticada) {
+                alert('Sessão expirada. Por favor, faça o login novamente.');
+                window.location.reload(); 
+                return;
+            }
+            const dataSelecionada = inputData.value;
+            let url = `/api/admin/baixar-relatorio?senha=${senhaAdminAutenticada}`;
+            if (dataSelecionada) url += `&data=${dataSelecionada}`;
+            window.location.href = url;
+        });
+    });
+    </script>
 </body>
 </html>
