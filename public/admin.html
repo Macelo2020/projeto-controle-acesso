@@ -3,52 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Administração</title>
+    <title>Administração - Controle de Refeitório</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        #relatorio-container, #login-container { max-width: 800px; margin: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .controles { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
-        .resumo { background-color: #e7f3fe; border-left: 6px solid #2196F3; margin: 20px 0; padding: 15px; }
+        /* --- ESTILOS GLOBAIS --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            transition: background-color 0.5s ease;
+        }
+
+        /* --- 1. TELA DE LOGIN (ESTADO INICIAL) --- */
+        body.login-state {
+            /* O gradiente azul profissional */
+            background-image: linear-gradient(135deg, #00467f, #0072c6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        #login-container {
+            background-color: #ffffff;
+            padding: 2.5rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 380px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .login-header .icon {
+            /* Ícone de cadeado SVG embutido */
+            width: 40px;
+            height: 40px;
+            color: #0056b3;
+            margin-bottom: 1rem;
+        }
+        
+        #login-container h2 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            font-size: 1.75rem;
+        }
+        
+        #login-container p {
+            margin: 0 0 1.5rem 0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        #login-container label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #444;
+        }
+
+        #login-container input[type="password"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        #login-container button {
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 1.5rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #0056b3;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #login-container button:hover {
+            background-color: #00467f;
+        }
+
+        #mensagem-erro {
+            color: #d93025;
+            margin-top: 1rem;
+            font-weight: 500;
+            min-height: 1.2em; /* Evita que o layout "pule" */
+        }
+
+        /* --- 2. TELA DE RELATÓRIO (ESTADO LOGADO) --- */
+        body.report-state {
+            background-color: #f4f7f6; /* Fundo de "workspace" profissional */
+        }
+        
+        #relatorio-container {
+            background-color: #ffffff;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        #relatorio-container h1 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .controles {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .controles > div {
+            flex-grow: 1; /* Faz os campos crescerem */
+        }
+        
+        .controles label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .controles input,
+        .controles select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .controles button {
+            flex-shrink: 0; /* Impede que o botão encolha */
+            padding: 0.7rem 1.5rem;
+        }
+
+        #btn-baixar-relatorio {
+            background-color: #1a73e8; /* Azul Google */
+        }
+        #btn-baixar-relatorio:hover {
+            background-color: #1662c1;
+        }
+        #btn-filtrar {
+             background-color: #34a853; /* Verde */
+        }
+        #btn-filtrar:hover {
+            background-color: #2c8f45;
+        }
+
+        .resumo {
+            background-color: #e7f3fe;
+            border-left: 6px solid #1a73e8;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f8f8;
+            color: #444;
+        }
+        tr:nth-child(even) {
+            background-color: #fdfdfd;
+        }
     </style>
 </head>
-<body>
-    <h1>Painel de Administração</h1>
+<body class="login-state"> <svg width="0" height="0" style="position:absolute">
+        <symbol id="icon-lock" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
+        </symbol>
+    </svg>
 
     <div id="login-container">
-        <h2>Acesso Restrito</h2>
-        <p>Por favor, insira a senha de administrador para continuar.</p>
-        <input type="password" id="senha-admin" placeholder="Digite a senha">
-        <button id="btn-acessar">Acessar</button>
-        <p id="mensagem-erro" style="color: red;"></p>
+        <div class="login-header">
+            <svg class="icon"><use xlink:href="#icon-lock"/></svg>
+            <h2>Acesso Restrito</h2>
+            <p>Painel de Administração do Refeitório</p>
+        </div>
+        
+        <form id="login-form">
+            <label for="senha-admin">Senha</label>
+            <input type="password" id="senha-admin" placeholder="Digite sua senha" required>
+            
+            <button type="button" id="btn-acessar">Entrar</button>
+            
+            <p id="mensagem-erro"></p>
+        </form>
     </div>
 
     <div id="relatorio-container" style="display: none;">
-        <h2>Relatório de Acessos</h2>
-
+        <h1>Painel de Administração</h1>
         <div class="controles">
-            <label for="data-relatorio">Data:</label>
-            <input type="date" id="data-relatorio">
-
-            <label for="filtro-texto">Buscar:</label>
-            <input type="text" id="filtro-texto" placeholder="Digite para buscar...">
-
-            <label for="filtro-criterio">Buscar por:</label>
-            <select id="filtro-criterio">
-                <option value="nome">Nome</option>
-                <option value="matricula">Matrícula</option>
-                <option value="status">Status</option>
-            </select>
-
+            <div>
+                <label for="data-relatorio">Filtrar por data:</label>
+                <input type="date" id="data-relatorio">
+            </div>
+            <div>
+                <label for="filtro-texto">Buscar por termo:</label>
+                <input type="text" id="filtro-texto" placeholder="Digite para buscar...">
+            </div>
+            <div>
+                <label for="filtro-criterio">Critério:</label>
+                <select id="filtro-criterio">
+                    <option value="nome">Nome</option>
+                    <option value="matricula">Matrícula</option>
+                    <option value="status">Status</option>
+                </select>
+            </div>
             <button id="btn-filtrar">Buscar</button>
         </div>
         
-        <button id="btn-baixar-relatorio">Baixar Relatório Completo do Dia</button>
-        <hr>
+        <button id="btn-baixar-relatorio">Baixar Relatório do Dia</button>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
 
-        <div id="resumo-acessos" class="resumo"></div>
+        <div id="resumo-acessos" class="resumo" style="display: none;"></div>
 
         <table border="1">
             <thead>
@@ -66,24 +258,21 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- 1. Mapeamento dos Elementos do HTML ---
+        // --- 1. Mapeamento dos Elementos ---
+        const body = document.body;
         const loginContainer = document.getElementById('login-container');
         const relatorioContainer = document.getElementById('relatorio-container');
-        
         const inputSenha = document.getElementById('senha-admin');
         const btnAcessar = document.getElementById('btn-acessar');
         const mensagemErro = document.getElementById('mensagem-erro');
-
         const corpoTabela = document.getElementById('corpo-tabela-relatorio');
         const btnBaixar = document.getElementById('btn-baixar-relatorio');
         const inputData = document.getElementById('data-relatorio');
         const btnFiltrar = document.getElementById('btn-filtrar');
-        
-        // Novos elementos
         const inputFiltroTexto = document.getElementById('filtro-texto');
         const selectFiltroCriterio = document.getElementById('filtro-criterio');
         const resumoAcessos = document.getElementById('resumo-acessos');
-
+        
         let senhaAdminAutenticada = null;
 
         // --- 2. Função para buscar e exibir o relatório ---
@@ -94,7 +283,6 @@
             const termoBusca = inputFiltroTexto.value;
             const criterioBusca = selectFiltroCriterio.value;
 
-            // Constrói a URL com todos os parâmetros
             let url = `/api/admin/relatorio?senha=${senhaAdminAutenticada}`;
             if (dataSelecionada) url += `&data=${dataSelecionada}`;
             if (termoBusca) {
@@ -104,20 +292,24 @@
             try {
                 const response = await fetch(url);
 
+                // SE A SENHA ESTIVER ERRADA
                 if (!response.ok) {
                     if (response.status === 401) {
                         mensagemErro.textContent = 'Senha incorreta. Tente novamente.';
-                        loginContainer.style.display = 'block';
-                        relatorioContainer.style.display = 'none';
-                        senhaAdminAutenticada = null;
+                        inputSenha.focus();
+                        inputSenha.select();
                     } else {
                         mensagemErro.textContent = `Erro ao buscar dados: ${response.statusText}`;
                     }
                     return;
                 }
-
+                
+                // SE A SENHA ESTIVER CORRETA
                 const registros = await response.json();
                 
+                // *** A MÁGICA DA TRANSIÇÃO ACONTECE AQUI ***
+                body.classList.remove('login-state');
+                body.classList.add('report-state');
                 loginContainer.style.display = 'none';
                 relatorioContainer.style.display = 'block';
 
@@ -137,6 +329,7 @@
                 // Calcula e exibe o resumo
                 const acessosConcedidos = registros.filter(reg => reg.status === 'concedido').length;
                 resumoAcessos.innerHTML = `<strong>Acessos Concedidos:</strong> ${acessosConcedidos} | <strong>Total de Registros Exibidos:</strong> ${registros.length}`;
+                resumoAcessos.style.display = 'block'; // Mostra o resumo
 
             } catch (error) {
                 console.error('Erro na requisição:', error);
@@ -155,12 +348,21 @@
             mensagemErro.textContent = '';
             buscarRelatorio();
         });
+        
+        // Permite logar pressionando "Enter"
+        inputSenha.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                btnAcessar.click();
+            }
+        });
 
         btnFiltrar.addEventListener('click', buscarRelatorio);
 
         btnBaixar.addEventListener('click', () => {
-            if (!senhaAdminAutenticada) {
+            if (!senhaAdminAutentica) {
                 alert('Sessão expirada. Por favor, faça o login novamente.');
+                // Recarrega a página para o login
+                window.location.reload(); 
                 return;
             }
             const dataSelecionada = inputData.value;
