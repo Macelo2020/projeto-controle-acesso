@@ -1,63 +1,59 @@
-# Projeto: Sistema de Controle de Acesso ao Refeitório v2.0
+# Projeto: Controle de Acesso ao Refeitório IWGP
 
-## Descrição
+> Versão Atual: 3.0.1
 
-Este projeto é um sistema de controle de acesso para o refeitório do Hospital São Vicente de Paulo, desenvolvido em Node.js. Ele utiliza um banco de dados MongoDB para registrar os acessos dos funcionários e um painel de administração para visualização e gerenciamento diário.
+Este é um sistema Full Stack para gerenciar e controlar o acesso de usuários a um refeitório. O sistema valida os usuários por matrícula, registra o histórico de acessos ("batidas") e permite a administração completa desses dados através de um painel de controle.
 
-O sistema valida as matrículas dos funcionários a partir de um arquivo `matriculas.csv`, registra todas as tentativas de acesso (aprovadas ou negadas) no banco de dados e oferece uma interface segura para a administração.
-
-## Funcionalidades
-
-- **Verificação de Matrícula**: Libera ou nega o acesso com base em uma lista de funcionários.
-- **Registro de Acessos**: Grava cada tentativa de acesso (matrícula, nome, status, data e hora) no MongoDB.
-- **Painel de Administração Seguro**: Interface protegida por senha para visualizar o relatório diário de acessos.
-- **Filtro por Data**: Permite buscar relatórios de dias específicos.
-- **Exportação de Relatório**: Possibilidade de baixar o relatório completo do dia em formato `.txt`.
-- **Limpeza Automática**: Os registros são zerados automaticamente todos os dias à meia-noite (fuso horário de São Paulo).
-- **Limpeza Manual Segura**: Funcionalidade para zerar os registros diários manualmente, protegida por uma senha específica.
-
-## Tecnologias Utilizadas
-
-- **Backend**: Node.js com o framework Express.js.
-- **Banco de Dados**: MongoDB (hospedado no MongoDB Atlas ou localmente).
-- **ORM**: Mongoose para interação com o MongoDB.
-- **Frontend**: HTML, CSS e JavaScript puro.
-- **Agendamento de Tarefas**: `node-cron` para a limpeza diária do banco de dados.
-- **Hospedagem**: Render.com (ou similar).
-- **Controle de Versão**: Git e GitHub.
+O projeto também exibe o cardápio da semana para os usuários, sendo este facilmente atualizável através de um arquivo `cardapio.json`.
 
 ---
 
-## Como Usar o Projeto
+## ✨ Funcionalidades Principais
 
-### Pré-requisitos
+O sistema é dividido em duas frentes: a área pública (login e cardápio) e o painel administrativo.
 
-- Node.js e npm (ou yarn) instalados.
-- Uma instância do MongoDB (local ou em um serviço como o MongoDB Atlas).
+### Área Pública
+* **Tela de Login:** Validação de usuários por matrícula para permitir o acesso.
+* **Exibição do Cardápio:** Mostra o cardápio atualizado da semana (lido a partir do `cardapio.json`).
 
-### Configuração
+### Painel Administrativo (Acesso Restrito)
+* **Dashboard de Acessos:** Visualização em tempo real da quantidade total de "batidas" (acessos) no refeitório.
+* **Gerenciamento de Relatórios:**
+    * **Pesquisa Avançada:** Permite ao administrador filtrar os acessos por nome, matrícula ou status.
+    * **Download de Relatórios:** Opção de baixar o histórico de acessos (em formato CSV).
+    * **Zerar Relatório:** Funcionalidade para limpar os registros de batidas, iniciando um novo ciclo de contagem.
+* **Layout Responsivo:** Interface de administração com design (UI/UX) aprimorado para fácil gerenciamento em diferentes dispositivos.
 
-1.  **Clonar o Repositório**:
-    ```bash
-    git clone [https://github.com/Macelo2020/projeto-controle-acesso.git](https://github.com/Macelo2020/projeto-controle-acesso.git)
-    ```
+---
 
-2.  **Entrar na Pasta do Projeto**:
-    ```bash
-    cd projeto-controle-acesso
-    ```
+## 🛠️ Tecnologias Utilizadas
 
-3.  **Instalar as Dependências**:
-    ```bash
-    npm install
-    ```
+Este projeto utiliza uma arquitetura moderna unindo Front-end, Back-end e Banco de Dados na nuvem.
 
-4.  **Configurar Variáveis de Ambiente**:
-    Crie um arquivo chamado `.env` na raiz do projeto. Ele é fundamental para a segurança e configuração do sistema. Adicione as seguintes variáveis:
+* **Frontend:** HTML5, CSS3, JavaScript
+* **Backend:** Node.js (servidor que processa as regras de negócio)
+* **Banco de Dados:** MongoDB Atlas (usado para armazenar usuários, matrículas e registros de acesso)
+* **Arquivo de Dados:** `cardapio.json` (usado para gerenciar o cardápio de forma simples)
+* **Hospedagem (Cloud):** Render
+* **CI/CD (DevOps):** O projeto está configurado com Auto-Deploy. Qualquer `git push` para a branch `main` no GitHub inicia automaticamente um novo deploy no Render.
 
-    ```env
-    # String de conexão do seu banco de dados MongoDB
-    MONGODB_URI=sua_string_de_conexao_do_mongodb
+---
 
-    # Senha para acessar o painel de administração e obter relatórios
-    SEN
+## 🚀 Histórico de Versões (Evolução Arquitetural)
+
+Este histórico documenta a evolução do projeto, desde um protótipo até uma aplicação Full Stack.
+
+* **v3.0.1**
+    * `[PATCH]` Atualização de rotina do cardápio da semana.
+* **v3.0.0**
+    * `[MAJOR]` Marca a versão estável do painel administrativo, consolidando todas as funcionalidades de pesquisa, download e o novo layout aprimorado (UI/UX).
+* **v2.2.0**
+    * `[MINOR]` Adição da funcionalidade de **pesquisa avançada** no painel (por nome, matrícula e status).
+* **v2.1.0**
+    * `[MINOR]` Adição da funcionalidade de **download do relatório** de acessos (CSV).
+* **v2.0.0**
+    * `[MAJOR]` **Evolução para Arquitetura Full Stack.** Migração da hospedagem para o **Render** e integração com **MongoDB Atlas**. Esta mudança permitiu a criação do **Painel Administrativo** inicial (contagem de batidas e "zerar relatório").
+* **v1.0.0**
+    * `[MAJOR]` **Nascimento da Aplicação Web.** Migração do protótipo (Google Forms) para uma aplicação web estática (HTML/CSS/JS), hospedada no **Netlify**. Esta versão continha a **tela de login** e validação de matrícula.
+* **v0.1.0 (Protótipo)**
+    * `[PROTÓTIPO]` Validação inicial do conceito utilizando um **Google Forms** para a coleta de dados (nome e matrícula).
