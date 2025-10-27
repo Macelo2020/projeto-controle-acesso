@@ -1,9 +1,9 @@
 {
-  "segunda": "Coxa/Sobrecoxa",
-  "terca": "Fígado",
-  "quarta": "Linguiça",
-  "quinta": "Frango Guisado",
-  "sexta": "Carne Moída",
-  "sabado": "não informado",
-  "domingo": "não informado"
+  "segunda": "COZIDO",
+  "terca": "FRANGO GUISADO",
+  "quarta": "COXA E SOBRECOXA",
+  "quinta": "FRANGO EM CUBOS",
+  "sexta": "LINGUIÇA",
+  "sabado": "FRANGO GUISADO",
+  "domingo": "FRANGO GUISADO"
 }
