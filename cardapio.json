@@ -1,9 +1,9 @@
 {
-  "segunda": "FRANGO GUISADO",
-  "terça": "FÍGADO",
-  "quarta": "CARNE MOÍDA ",
-  "quinta": "COXA E SOBRECOXA ASSADA",
-  "sexta": "FRANGO EM CUBOS",
-  "sabado": "LINGUIÇA",
-  "domingo": "LINGUIÇA"
+  "segunda": "LINGUIÇA",
+  "terça": "COZIDO",
+  "quarta": "FRANGO EM CUBOS",
+  "quinta": "COXA/SOBRECOXA",
+  "sexta": "NÃO TEM ALMOÇO NO REFEITÓRIO",
+  "sabado": "COXA/SOBRECOXA",
+  "domingo": "COXA/SOBRECOXA"
 }
