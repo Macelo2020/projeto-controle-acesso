@@ -1,9 +1,9 @@
 {
-  "segunda": "FÍGADO",
-  "terça": "CARNE MOÍDA",
-  "quarta": "SALPICÃO",
+  "segunda": "LINGUIÇA",
+  "terça": "FRANGO CREMOSO",
+  "quarta": "FRANGO GUISADO",
   "quinta": "COXA/SOBRECOXA ASSADA",
-  "sexta": "NFRANGO EM CUBOS",
-  "sabado": "FRANGO GUISADO",
-  "domingo": "FRANGO GUISADO"
+  "sexta": "FRANGO EM CUBOS",
+  "sabado": "COXA/SOBRECOXA ASSADA",
+  "domingo": "COXA/SOBRECOXA ASSADA"
 }
