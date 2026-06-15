@@ -1,11 +1,7 @@
 # 🍽️ Projeto: Controle de Acesso ao Refeitório IWGP
 
 <p align="center">
-<<<<<<< HEAD
   <img src="img/interface-mobile.png" alt="Interface do Controle de Acesso IWGP" width="320px" style="border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3);"/>
-=======
-  <img src="public/interface-mobile.png" alt="Interface do Controle de Acesso IWGP" width="320px" style="border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3);"/>
->>>>>>> 942e3bb6fea1db54a537ab5221d01cc9f41eaac7
 </p>
 
 <p align="center">
