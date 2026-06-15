@@ -59,6 +59,7 @@ O desenvolvimento deste sistema demonstra uma clara trilha de maturidade de enge
 * **`v0.1.0` [PROTÓTIPO]** — Validação inicial de conceito (PoC) utilizando formulários inteligentes para coleta e auditoria de dados de campo.
 
 ---
+---
 <p align="center">
-  <img src="public/images/interface-mobile.png" alt="Interface do Controle de Acesso IWGP" width="320px" style="border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3);"/>
+  Desenvolvido com foco em eficiência operacional por <b>BlueFrog Smart Solutions</b> 🐸
 </p>
