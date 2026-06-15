@@ -60,6 +60,13 @@ O desenvolvimento deste sistema demonstra uma clara trilha de maturidade de enge
 
 ---
 ---
+---
+
 <p align="center">
-  Desenvolvido com foco em eficiência operacional por <b>BlueFrog Smart Solutions</b> 🐸
+  <br/>
+  <img src="https://github.com/Macelo2020/Macelo2020/raw/main/Logo%20Vertical%20Blue%20Frog.png" alt="BlueFrog Smart Solutions" width="160px"/>
+  <br/>
+  <sub><b>BlueFrog Smart Solutions</b> • Soluções Inteligentes com IA & Automação</sub>
+  <br/>
+  <sub>© 2026 Hospital São Vicente de Paulo. Todos os direitos reservados.</sub>
 </p>
