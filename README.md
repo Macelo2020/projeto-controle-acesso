@@ -60,6 +60,7 @@ O desenvolvimento deste sistema demonstra uma clara trilha de maturidade de enge
 
 ---
 ---
+
 <p align="center">
   <br/>
   👨‍💻 Desenvolvedor: Marcelo Nascimento dos Santos 
