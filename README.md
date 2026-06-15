@@ -60,6 +60,15 @@ O desenvolvimento deste sistema demonstra uma clara trilha de maturidade de enge
 
 ---
 ---
+<p align="center">
+  <br/>
+  👨‍💻 Desenvolvedor: Marcelo Nascimento dos Santos 
+  <br/>
+  <sub><b>Senior Systems Analyst & AI Specialist | Founder of BlueFrog Smart Solutions. Building the future with AI-Assisted Dev & No-Code.</sub>
+  </p>
+
+---
+
 ---
 
 <p align="center">
@@ -69,4 +78,6 @@ O desenvolvimento deste sistema demonstra uma clara trilha de maturidade de enge
   <sub><b>BlueFrog Smart Solutions</b> • Soluções Inteligentes com IA & Automação</sub>
   <br/>
   <sub>© 2026 Hospital São Vicente de Paulo. Todos os direitos reservados.</sub>
+  <br/><br/>
+  ⭐ <b>Se este projeto foi útil para você, deixe uma estrela no repositório!</b>
 </p>
