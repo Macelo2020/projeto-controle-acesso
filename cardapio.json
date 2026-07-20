@@ -1,9 +1,9 @@
 {
   "segunda": "Coxa/Sobrecoxa",
-  "terça": "Cozido",
-  "quarta": "Fígado",
-  "quinta": "Frango Cremoso",
-  "sexta": "Linguiça",
-  "sabado": "Linguiça",
-  "domingo": "Linguiça"
+  "terça": "Frango Cremoso",
+  "quarta": "Coxa/Sobrecoxa",
+  "quinta": "Cozido",
+  "sexta": "Fígado",
+  "sabado": "Coxa/Sobrecoxa",
+  "domingo": "Coxa/Sobrecoxa"
 }
