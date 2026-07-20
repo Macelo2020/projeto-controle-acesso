@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "segunda": "Coxa/Sobrecoxa",
   "terça": "Frango Cremoso",
   "quarta": "Coxa/Sobrecoxa",
@@ -6,4 +7,13 @@
   "sexta": "Fígado",
   "sabado": "Coxa/Sobrecoxa",
   "domingo": "Coxa/Sobrecoxa"
+=======
+  "segunda": "Fígado",
+  "terça": "Frango Guisado",
+  "quarta": "Linguíça",
+  "quinta": "Frango Cremoso",
+  "sexta": "Coxa e Sobrecoxa",
+  "sabado": "Coxa e Sobrecoxa",
+  "domingo": "Linguiça"
+>>>>>>> 459a6f19d7731c2b6bb8e6e04626aba1e93aea21
 }
